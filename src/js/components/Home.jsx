@@ -4,7 +4,7 @@ const Home = () => {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const userName = "jacksons";
-  const URL = `https://playground.4geeks.com/todo/`;
+  const URL = `https://playground.4geeks.com/todo/users/`;
 
   useEffect(() => {
     createUser();
