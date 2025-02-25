@@ -4,7 +4,7 @@ const Home = () => {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState("");
   const userName = "jacksons";
-  const URL = `https://playground.4geeks.com/todo/users/`;
+  const URL = `https://playground.4geeks.com/todo`;
 
   useEffect(() => {
     createUser();
@@ -12,25 +12,27 @@ const Home = () => {
 
   const createUser = async () => {
     try {
-      const response = await fetch(URL + userName, { method: "PUT" });
+      const response = await fetch(URL + "/users/" + userName, { method: "POST" });
 
-      if (!response.ok) {
+      
         if (response.status === 400) {
           console.log("User already exists");
+        }else if (response.status===201){
+          getTodos();
         } else {
           throw new Error("Failed to create user");
         }
       }
 
-      getTodos();
-    } catch (error) {
+      
+     catch (error) {
       console.error("Error creating user:", error);
     }
   };
 
   const getTodos = async () => {
     try {
-      const response = await fetch(URL + userName, { method: "GET" });
+      const response = await fetch(URL + "/users/" + userName, { method: "GET" });
       if (!response.ok) throw new Error("Failed to fetch todos");
 
       const data = await response.json();
@@ -44,35 +46,32 @@ const Home = () => {
     if (!input.trim()) return;
 
     const newTask = { label: input, done: false };
-    const updatedTasks = [...tasks, newTask];
 
     try {
-      const response = await fetch(URL + userName, {
+      const response = await fetch(URL + "/todos/" + userName, {
         method: "POST",
-        body: JSON.stringify(updatedTasks),
+        body: JSON.stringify(newTask),
         headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) throw new Error("Error updating tasks");
-      setTasks(updatedTasks);
+      getTodos();
       setInput("");
     } catch (error) {
       console.error("Error adding task:", error);
     }
   };
 
-  const deleteTask = async (taskLabel) => {
-    const updatedTasks = tasks.filter((task) => task.label !== taskLabel);
+  const deleteTask = async (taskId) => {
 
     try {
-      const response = await fetch(URL + userName, {
+      const response = await fetch(URL + "/todos/" + taskId, {
         method: "DELETE",
-        body: JSON.stringify(updatedTasks),
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Error deleting task");
-      setTasks(updatedTasks);
+      if (response.status != 204) throw new Error("Error deleting task");
+      getTodos();
     } catch (error) {
       console.error("Error deleting task:", error);
     }
@@ -123,7 +122,7 @@ const TaskItem = ({ task, deleteTask }) => {
   return (
     <li className="flex justify-between items-center bg-gray-100 p-2">
       <span>{task.label}</span>
-      <button onClick={() => deleteTask(task.label)} className="ms-3">
+      <button onClick={() => deleteTask(task.id)} className="ms-3">
         Delete
       </button>
     </li>
